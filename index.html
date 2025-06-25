@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Game Dev 3</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      background: white;
+    }
+    .controls {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+    }
+    .btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #555;
+      color: white;
+      font-size: 24px;
+      border: 2px solid #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      touch-action: manipulation;
+    }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="768" height="768"></canvas>
+
+<div class="controls">
+  <div class="btn" id="left">◀</div>
+  <div class="btn" id="jump">⬆</div>
+  <div class="btn" id="right">▶</div>
+</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const background = new Image();
+background.src = "A_minimalist_2D_digital_art_image_features_two_dis.png";
+
+const playerImg = new Image();
+playerImg.src = "file-CcrzpEnUHh8wiv4ST6ScFf"; // Dino kamu
+
+const player = {
+  x: 100,
+  y: 620,
+  w: 40,
+  h: 40,
+  vx: 0,
+  vy: 0,
+  grounded: true
+};
+
+const gravity = 0.8;
+let cameraX = 0;
+
+let leftPressed = false;
+let rightPressed = false;
+
+// Kontrol sentuh
+document.getElementById("left").ontouchstart = () => leftPressed = true;
+document.getElementById("left").ontouchend = () => leftPressed = false;
+document.getElementById("right").ontouchstart = () => rightPressed = true;
+document.getElementById("right").ontouchend = () => rightPressed = false;
+document.getElementById("jump").ontouchstart = () => {
+  if (player.grounded) {
+    player.vy = -15;
+    player.grounded = false;
+  }
+};
+
+// Batu & Pohon
+const obstacles = [
+  { x: 500, y: 720, w: 40, h: 40 },
+  { x: 900, y: 720, w: 40, h: 40 },
+  { x: 1200, y: 720, w: 40, h: 40 }
+];
+
+const trees = [
+  { x: 700, y: 660 },
+  { x: 1100, y: 660 },
+  { x: 1600, y: 660 }
+];
+
+function update() {
+  // Gerak horizontal
+  if (leftPressed) player.vx = -5;
+  else if (rightPressed) player.vx = 5;
+  else player.vx = 0;
+
+  player.x += player.vx;
+  player.y += player.vy;
+  player.vy += gravity;
+
+  // Ground
+  if (player.y + player.h >= 760) {
+    player.y = 760 - player.h;
+    player.vy = 0;
+    player.grounded = true;
+  }
+
+  // Kamera mengikuti pemain
+  cameraX = player.x - canvas.width / 2 + player.w / 2;
+
+  // Cek tabrakan batu
+  for (let obs of obstacles) {
+    if (
+      player.x < obs.x + obs.w &&
+      player.x + player.w > obs.x &&
+      player.y < obs.y + obs.h &&
+      player.y + player.h > obs.y
+    ) {
+      // Mundur
+      player.x -= player.vx;
+    }
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Gambar background statis
+  ctx.drawImage(background, -cameraX, 0, canvas.width, canvas.height);
+
+  // Gambar obstacle (batu)
+  for (let obs of obstacles) {
+    ctx.fillStyle = "#444";
+    ctx.fillRect(obs.x - cameraX, obs.y, obs.w, obs.h);
+  }
+
+  // Gambar pohon
+  for (let tree of trees) {
+    ctx.fillStyle = "#888";
+    ctx.fillRect(tree.x - cameraX + 10, tree.y, 20, 50); // batang
+    ctx.beginPath();
+    ctx.arc(tree.x - cameraX + 20, tree.y, 25, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Gambar pemain
+  ctx.drawImage(playerImg, player.x - cameraX, player.y, player.w, player.h);
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+background.onload = () => {
+  gameLoop();
+};
+</script>
+</body>
+</html>
