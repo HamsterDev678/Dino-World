@@ -1,169 +1,570 @@
+<rosieArtifact title="8-Bit Dino Runner">
+<rosieCreate file="index.html">
+<![CDATA[
 <!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>Game Dev 3</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #000;
-      overflow: hidden;
-    }
-    canvas {
-      display: block;
-      background: white;
-    }
-    .controls {
-      position: absolute;
-      bottom: 10px;
-      width: 100%;
-      display: flex;
-      justify-content: space-around;
-    }
-    .btn {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: #555;
-      color: white;
-      font-size: 24px;
-      border: 2px solid #222;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      user-select: none;
-      touch-action: manipulation;
-    }
-  </style>
-</head>
-<body>
-<canvas id="gameCanvas" width="768" height="768"></canvas>
-
-<div class="controls">
-  <div class="btn" id="left">◀</div>
-  <div class="btn" id="jump">⬆</div>
-  <div class="btn" id="right">▶</div>
-</div>
-
-<script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-const background = new Image();
-background.src = "A_minimalist_2D_digital_art_image_features_two_dis.png";
-
-const playerImg = new Image();
-playerImg.src = "file-CcrzpEnUHh8wiv4ST6ScFf"; // Dino kamu
-
-const player = {
-  x: 100,
-  y: 620,
-  w: 40,
-  h: 40,
-  vx: 0,
-  vy: 0,
-  grounded: true
-};
-
-const gravity = 0.8;
-let cameraX = 0;
-
-let leftPressed = false;
-let rightPressed = false;
-
-// Kontrol sentuh
-document.getElementById("left").ontouchstart = () => leftPressed = true;
-document.getElementById("left").ontouchend = () => leftPressed = false;
-document.getElementById("right").ontouchstart = () => rightPressed = true;
-document.getElementById("right").ontouchend = () => rightPressed = false;
-document.getElementById("jump").ontouchstart = () => {
-  if (player.grounded) {
-    player.vy = -15;
-    player.grounded = false;
-  }
-};
-
-// Batu & Pohon
-const obstacles = [
-  { x: 500, y: 720, w: 40, h: 40 },
-  { x: 900, y: 720, w: 40, h: 40 },
-  { x: 1200, y: 720, w: 40, h: 40 }
-];
-
-const trees = [
-  { x: 700, y: 660 },
-  { x: 1100, y: 660 },
-  { x: 1600, y: 660 }
-];
-
-function update() {
-  // Gerak horizontal
-  if (leftPressed) player.vx = -5;
-  else if (rightPressed) player.vx = 5;
-  else player.vx = 0;
-
-  player.x += player.vx;
-  player.y += player.vy;
-  player.vy += gravity;
-
-  // Ground
-  if (player.y + player.h >= 760) {
-    player.y = 760 - player.h;
-    player.vy = 0;
-    player.grounded = true;
-  }
-
-  // Kamera mengikuti pemain
-  cameraX = player.x - canvas.width / 2 + player.w / 2;
-
-  // Cek tabrakan batu
-  for (let obs of obstacles) {
-    if (
-      player.x < obs.x + obs.w &&
-      player.x + player.w > obs.x &&
-      player.y < obs.y + obs.h &&
-      player.y + player.h > obs.y
-    ) {
-      // Mundur
-      player.x -= player.vx;
-    }
-  }
-}
-
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Gambar background statis
-  ctx.drawImage(background, -cameraX, 0, canvas.width, canvas.height);
-
-  // Gambar obstacle (batu)
-  for (let obs of obstacles) {
-    ctx.fillStyle = "#444";
-    ctx.fillRect(obs.x - cameraX, obs.y, obs.w, obs.h);
-  }
-
-  // Gambar pohon
-  for (let tree of trees) {
-    ctx.fillStyle = "#888";
-    ctx.fillRect(tree.x - cameraX + 10, tree.y, 20, 50); // batang
-    ctx.beginPath();
-    ctx.arc(tree.x - cameraX + 20, tree.y, 25, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Gambar pemain
-  ctx.drawImage(playerImg, player.x - cameraX, player.y, player.w, player.h);
-}
-
-function gameLoop() {
-  update();
-  draw();
-  requestAnimationFrame(gameLoop);
-}
-
-background.onload = () => {
-  gameLoop();
-};
-</script>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>8-Bit Dino Runner</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "phaser": "https://esm.sh/phaser@3.70.0"
+        }
+      }
+    </script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+        background: linear-gradient(to bottom, #e8e8e8 0%, #c0c0c0 70%, #404040 100%);
+        font-family: 'Courier New', monospace;
+      }
+      #phaser-game-container {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="phaser-game-container"></div>
+    <script type="module" src="main.js"></script>
+    <script src="https://storage.googleapis.com/rosebud_staticfiles/ChatManager.js"></script>
+    <script src="https://storage.googleapis.com/rosebud_staticfiles/ImageGenerator.js"></script>
+    <script src="https://storage.googleapis.com/rosebud_staticfiles/ProgressLogger.js"></script>
+    <script src="https://storage.googleapis.com/rosebud_staticfiles/OGP.js"></script>
+  </body>
 </html>
+]]>
+</rosieCreate>
+<rosieCreate file="main.js">
+<![CDATA[
+import Phaser from 'phaser';
+import { GameScene } from './gameScene.js';
+
+const config = {
+  type: Phaser.AUTO,
+  physics: {
+    default: 'arcade',
+    arcade: {
+      gravity: { y: 800 },
+      debug: false
+    }
+  },
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    parent: 'phaser-game-container',
+    width: 1024,
+    height: 768
+  },
+  scene: [GameScene],
+  backgroundColor: '#e8e8e8'
+};
+
+const game = new Phaser.Game(config);
+]]>
+</rosieCreate>
+<rosieCreate file="gameScene.js">
+<![CDATA[
+import { Player } from './player.js';
+import { ObstacleManager } from './obstacles.js';
+import { UIManager } from './ui.js';
+import { InputManager } from './input.js';
+
+export class GameScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'GameScene' });
+    this.score = 0;
+    this.gameSpeed = 200;
+    this.isGameOver = false;
+  }
+
+  preload() {
+    this.load.image('background', 'https://play.rosebud.ai/assets/background.png?UZVV');
+    this.load.image('dinoSprite', 'https://play.rosebud.ai/assets/dinoSprite.png?n7JH');
+    this.load.image('stoneObstacle', 'https://play.rosebud.ai/assets/stoneObstacle.png?wjOe');
+    this.load.image('treeDecoration', 'https://play.rosebud.ai/assets/treeDecoration.png?2uYj');
+    this.load.image('gameController', 'https://play.rosebud.ai/assets/gameController.png?lMMn');
+  }
+
+  create() {
+    // Create gradient background
+    this.createBackground();
+    
+    // Initialize game systems
+    this.player = new Player(this, 150, 400);
+    this.obstacleManager = new ObstacleManager(this);
+    this.uiManager = new UIManager(this);
+    this.inputManager = new InputManager(this);
+    
+    // Setup collision detection
+    this.physics.add.overlap(this.player.sprite, this.obstacleManager.obstacles, this.hitObstacle, null, this);
+    
+    // Start the game loop
+    this.gameLoop = this.time.addEvent({
+      delay: 100,
+      callback: this.updateGame,
+      callbackScope: this,
+      loop: true
+    });
+  }
+
+  createBackground() {
+    // Create layered background with gradient effect
+    const bg1 = this.add.rectangle(512, 200, 1024, 400, 0xe8e8e8);
+    const bg2 = this.add.rectangle(512, 500, 1024, 300, 0xc0c0c0);
+    const bg3 = this.add.rectangle(512, 680, 1024, 176, 0x404040);
+    
+    // Add some subtle texture variation
+    for (let i = 0; i < 20; i++) {
+      const x = Phaser.Math.Between(0, 1024);
+      const y = Phaser.Math.Between(350, 450);
+      const dot = this.add.circle(x, y, 1, 0xd0d0d0, 0.3);
+    }
+  }
+
+  updateGame() {
+    if (this.isGameOver) return;
+    
+    this.score += 1;
+    this.uiManager.updateScore(this.score);
+    
+    // Gradually increase game speed
+    if (this.score % 100 === 0) {
+      this.gameSpeed += 20;
+    }
+    
+    this.obstacleManager.update(this.gameSpeed);
+  }
+
+  hitObstacle() {
+    if (!this.isGameOver) {
+      this.isGameOver = true;
+      this.player.sprite.setTint(0xff0000);
+      this.cameras.main.shake(300, 0.02);
+      
+      // Show game over after a brief pause
+      this.time.delayedCall(1000, () => {
+        this.uiManager.showGameOver(this.score);
+      });
+    }
+  }
+
+  restartGame() {
+    this.score = 0;
+    this.gameSpeed = 200;
+    this.isGameOver = false;
+    this.scene.restart();
+  }
+
+  update() {
+    if (!this.isGameOver) {
+      this.player.update();
+    }
+  }
+}
+]]>
+</rosieCreate>
+<rosieCreate file="player.js">
+<![CDATA[
+export class Player {
+  constructor(scene, x, y) {
+    this.scene = scene;
+    this.sprite = scene.physics.add.sprite(x, y, 'dinoSprite');
+    this.sprite.setScale(0.12);
+    this.sprite.setBounce(0.1);
+    this.sprite.setCollideWorldBounds(true);
+    
+    // Ground detection
+    this.groundY = y;
+    this.isOnGround = true;
+    this.canMove = true;
+    
+    // Movement properties
+    this.moveSpeed = 160;
+    this.jumpPower = -600;
+    
+    // Animation states
+    this.isRunning = false;
+    this.animationTimer = 0;
+  }
+
+  jump() {
+    if (this.isOnGround && !this.scene.isGameOver) {
+      this.sprite.setVelocityY(this.jumpPower);
+      this.isOnGround = false;
+      
+      // Add jump effect
+      this.scene.add.circle(this.sprite.x, this.sprite.y + 30, 8, 0xffffff, 0.6)
+        .setScale(0.5)
+        .setDepth(-1);
+    }
+  }
+
+  moveLeft() {
+    if (this.canMove && !this.scene.isGameOver) {
+      this.sprite.setVelocityX(-this.moveSpeed);
+      this.sprite.setFlipX(true);
+      this.isRunning = true;
+    }
+  }
+
+  moveRight() {
+    if (this.canMove && !this.scene.isGameOver) {
+      this.sprite.setVelocityX(this.moveSpeed);
+      this.sprite.setFlipX(false);
+      this.isRunning = true;
+    }
+  }
+
+  stopMoving() {
+    this.sprite.setVelocityX(0);
+    this.isRunning = false;
+  }
+
+  update() {
+    // Ground collision detection
+    if (this.sprite.y >= this.groundY && this.sprite.body.velocity.y >= 0) {
+      this.sprite.y = this.groundY;
+      this.sprite.setVelocityY(0);
+      this.isOnGround = true;
+    } else {
+      this.isOnGround = false;
+    }
+
+    // Simple running animation through scaling
+    if (this.isRunning && this.isOnGround) {
+      this.animationTimer += 0.2;
+      const scaleVariation = Math.sin(this.animationTimer) * 0.01;
+      this.sprite.setScale(0.12 + scaleVariation);
+    } else {
+      this.sprite.setScale(0.12);
+    }
+
+    // Constrain horizontal movement
+    if (this.sprite.x < 50) this.sprite.x = 50;
+    if (this.sprite.x > 974) this.sprite.x = 974;
+  }
+}
+]]>
+</rosieCreate>
+<rosieCreate file="obstacles.js">
+<![CDATA[
+export class ObstacleManager {
+  constructor(scene) {
+    this.scene = scene;
+    this.obstacles = scene.physics.add.group();
+    this.decorations = scene.physics.add.group();
+    
+    this.lastObstacleX = 1200;
+    this.minDistance = 300;
+    this.maxDistance = 500;
+    
+    // Create initial obstacles and decorations
+    this.createInitialElements();
+  }
+
+  createInitialElements() {
+    // Create some initial decorative trees
+    for (let i = 0; i < 3; i++) {
+      this.createTree(1200 + (i * 400));
+    }
+    
+    // Create initial obstacles
+    for (let i = 0; i < 2; i++) {
+      this.createObstacle(1400 + (i * 400));
+    }
+  }
+
+  createObstacle(x) {
+    const obstacle = this.obstacles.create(x, 450, 'stoneObstacle');
+    obstacle.setScale(0.08);
+    obstacle.setImmovable(true);
+    obstacle.body.setSize(obstacle.width * 0.7, obstacle.height * 0.8);
+    return obstacle;
+  }
+
+  createTree(x) {
+    const tree = this.decorations.create(x, 430, 'treeDecoration');
+    tree.setScale(0.06);
+    tree.setImmovable(true);
+    tree.setDepth(-1);
+    return tree;
+  }
+
+  update(gameSpeed) {
+    // Move all obstacles and decorations
+    this.obstacles.children.entries.forEach(obstacle => {
+      obstacle.x -= gameSpeed * 0.016;
+      
+      // Remove obstacles that are off-screen
+      if (obstacle.x < -100) {
+        obstacle.destroy();
+      }
+    });
+
+    this.decorations.children.entries.forEach(decoration => {
+      decoration.x -= gameSpeed * 0.016;
+      
+      // Remove decorations that are off-screen
+      if (decoration.x < -100) {
+        decoration.destroy();
+      }
+    });
+
+    // Spawn new obstacles
+    const rightmostObstacle = this.getRightmostObstacle();
+    if (rightmostObstacle < 1200) {
+      const distance = Phaser.Math.Between(this.minDistance, this.maxDistance);
+      this.createObstacle(rightmostObstacle + distance);
+      
+      // Sometimes add a tree near the obstacle
+      if (Math.random() < 0.6) {
+        const treeOffset = Phaser.Math.Between(-200, -100);
+        this.createTree(rightmostObstacle + distance + treeOffset);
+      }
+    }
+
+    // Spawn new decorations
+    const rightmostDecoration = this.getRightmostDecoration();
+    if (rightmostDecoration < 1100 && Math.random() < 0.3) {
+      const distance = Phaser.Math.Between(200, 400);
+      this.createTree(rightmostDecoration + distance);
+    }
+  }
+
+  getRightmostObstacle() {
+    let rightmost = 0;
+    this.obstacles.children.entries.forEach(obstacle => {
+      if (obstacle.x > rightmost) {
+        rightmost = obstacle.x;
+      }
+    });
+    return rightmost;
+  }
+
+  getRightmostDecoration() {
+    let rightmost = 0;
+    this.decorations.children.entries.forEach(decoration => {
+      if (decoration.x > rightmost) {
+        rightmost = decoration.x;
+      }
+    });
+    return rightmost;
+  }
+}
+]]>
+</rosieCreate>
+<rosieCreate file="ui.js">
+<![CDATA[
+export class UIManager {
+  constructor(scene) {
+    this.scene = scene;
+    this.createUI();
+  }
+
+  createUI() {
+    // Score display with 8-bit styling
+    this.scoreBackground = this.scene.add.rectangle(512, 80, 200, 60, 0x2a2a2a);
+    this.scoreBackground.setStrokeStyle(2, 0x606060);
+    
+    this.scoreText = this.scene.add.text(512, 80, '0', {
+      fontFamily: 'Courier New',
+      fontSize: '32px',
+      fill: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    // Controller interface
+    this.createController();
+  }
+
+  createController() {
+    // Controller background area
+    const controllerBg = this.scene.add.rectangle(512, 680, 1024, 176, 0x2a2a2a, 0.8);
+    
+    // Left control button
+    this.leftButton = this.scene.add.circle(200, 680, 40, 0x404040);
+    this.leftButton.setStrokeStyle(3, 0x808080);
+    this.leftButton.setInteractive();
+    
+    const leftArrow = this.scene.add.text(200, 680, '◀', {
+      fontFamily: 'Arial',
+      fontSize: '24px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    // Jump button (center)
+    this.jumpButton = this.scene.add.circle(512, 680, 50, 0x404040);
+    this.jumpButton.setStrokeStyle(4, 0x808080);
+    this.jumpButton.setInteractive();
+    
+    const jumpIcon = this.scene.add.text(512, 680, '▲', {
+      fontFamily: 'Arial',
+      fontSize: '28px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    // Right control button
+    this.rightButton = this.scene.add.circle(824, 680, 40, 0x404040);
+    this.rightButton.setStrokeStyle(3, 0x808080);
+    this.rightButton.setInteractive();
+    
+    const rightArrow = this.scene.add.text(824, 680, '▶', {
+      fontFamily: 'Arial',
+      fontSize: '24px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    // Add button press effects
+    this.addButtonEffects();
+  }
+
+  addButtonEffects() {
+    // Left button
+    this.leftButton.on('pointerdown', () => {
+      this.leftButton.setScale(0.9);
+      this.leftButton.setFillStyle(0x606060);
+    });
+    
+    this.leftButton.on('pointerup', () => {
+      this.leftButton.setScale(1);
+      this.leftButton.setFillStyle(0x404040);
+    });
+
+    // Jump button
+    this.jumpButton.on('pointerdown', () => {
+      this.jumpButton.setScale(0.9);
+      this.jumpButton.setFillStyle(0x606060);
+    });
+    
+    this.jumpButton.on('pointerup', () => {
+      this.jumpButton.setScale(1);
+      this.jumpButton.setFillStyle(0x404040);
+    });
+
+    // Right button
+    this.rightButton.on('pointerdown', () => {
+      this.rightButton.setScale(0.9);
+      this.rightButton.setFillStyle(0x606060);
+    });
+    
+    this.rightButton.on('pointerup', () => {
+      this.rightButton.setScale(1);
+      this.rightButton.setFillStyle(0x404040);
+    });
+  }
+
+  updateScore(score) {
+    this.scoreText.setText(score.toString());
+  }
+
+  showGameOver(finalScore) {
+    // Game over overlay
+    const overlay = this.scene.add.rectangle(512, 384, 1024, 768, 0x000000, 0.7);
+    
+    const gameOverBg = this.scene.add.rectangle(512, 300, 400, 200, 0x2a2a2a);
+    gameOverBg.setStrokeStyle(4, 0x808080);
+    
+    this.scene.add.text(512, 260, 'GAME OVER', {
+      fontFamily: 'Courier New',
+      fontSize: '32px',
+      fill: '#ff4444',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    this.scene.add.text(512, 310, `Final Score: ${finalScore}`, {
+      fontFamily: 'Courier New',
+      fontSize: '20px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    const restartButton = this.scene.add.rectangle(512, 360, 160, 40, 0x404040);
+    restartButton.setStrokeStyle(2, 0x808080);
+    restartButton.setInteractive();
+    
+    this.scene.add.text(512, 360, 'RESTART', {
+      fontFamily: 'Courier New',
+      fontSize: '16px',
+      fill: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    restartButton.on('pointerdown', () => {
+      this.scene.restartGame();
+    });
+  }
+}
+]]>
+</rosieCreate>
+<rosieCreate file="input.js">
+<![CDATA[
+export class InputManager {
+  constructor(scene) {
+    this.scene = scene;
+    this.setupKeyboard();
+    this.setupTouch();
+  }
+
+  setupKeyboard() {
+    // Keyboard controls
+    this.keys = this.scene.input.keyboard.addKeys('W,A,S,D,UP,LEFT,DOWN,RIGHT,SPACE');
+    
+    // Jump controls
+    this.keys.W.on('down', () => this.scene.player.jump());
+    this.keys.UP.on('down', () => this.scene.player.jump());
+    this.keys.SPACE.on('down', () => this.scene.player.jump());
+  }
+
+  setupTouch() {
+    const ui = this.scene.uiManager;
+    
+    // Touch controls for mobile
+    ui.leftButton.on('pointerdown', () => {
+      this.scene.player.moveLeft();
+    });
+    
+    ui.leftButton.on('pointerup', () => {
+      this.scene.player.stopMoving();
+    });
+    
+    ui.rightButton.on('pointerdown', () => {
+      this.scene.player.moveRight();
+    });
+    
+    ui.rightButton.on('pointerup', () => {
+      this.scene.player.stopMoving();
+    });
+    
+    ui.jumpButton.on('pointerdown', () => {
+      this.scene.player.jump();
+    });
+
+    // Handle touch outside buttons
+    ui.leftButton.on('pointerout', () => {
+      this.scene.player.stopMoving();
+    });
+    
+    ui.rightButton.on('pointerout', () => {
+      this.scene.player.stopMoving();
+    });
+  }
+
+  update() {
+    // Continuous keyboard input handling
+    if (this.keys.A.isDown || this.keys.LEFT.isDown) {
+      this.scene.player.moveLeft();
+    } else if (this.keys.D.isDown || this.keys.RIGHT.isDown) {
+      this.scene.player.moveRight();
+    } else {
+      this.scene.player.stopMoving();
+    }
+  }
+}
+]]>
+</rosieCreate>
+    </rosieArtifact>
